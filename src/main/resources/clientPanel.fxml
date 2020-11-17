@@ -10,15 +10,28 @@
     <padding>
         <Insets bottom="5.0" left="5.0" right="2.5" top="5.0"/>
     </padding>
-    <Label alignment="CENTER" maxWidth="Infinity" text="Клиент" textAlignment="CENTER" VBox.vgrow="ALWAYS">
+
+    <Label fx:id="panelName" alignment="CENTER" maxWidth="Infinity" text="Клиент" textAlignment="CENTER"
+           VBox.vgrow="ALWAYS">
         <font>
             <Font name="System Bold" size="24.0"/>
         </font>
     </Label>
+
     <HBox>
-        <ComboBox fx:id="diskSelector"/>
-        <TextField editable="false" HBox.hgrow="ALWAYS"/>
-        <Button focusTraversable="false" text="Вверх"/>
+        <ComboBox fx:id="diskSelector" onAction="#btnSelectDisk"/>
+        <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
+        <Button focusTraversable="false" text="Вверх" onAction="#btnUpperKey"/>
     </HBox>
-    <fx:include source="basePanel.fxml" VBox.vgrow="ALWAYS"/>
+    <TableView fx:id="clientFiles" VBox.vgrow="ALWAYS"/>
+    <HBox>
+        <Button text="Новый каталог" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"
+                onAction="#btnNew"/>
+        <Button text="Копировать" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false" onAction="#btnCopy"/>
+        <Button text="Переместить" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"
+                onAction="#btnMove"/>
+        <Button text="Переименовать" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"
+                onAction="#btnRename"/>
+        <Button text="Удалить" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false" onAction="#btnDelete"/>
+    </HBox>
 </VBox>

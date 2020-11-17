@@ -4,7 +4,7 @@ import javafx.application.Platform;
 
 public class MainController {
 
-    public void btnExit(){
+    public void btnExit() {
         Platform.exit();
     }
 }
