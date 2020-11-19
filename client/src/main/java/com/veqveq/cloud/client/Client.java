@@ -1,4 +1,4 @@
-package Client;
+package com.veqveq.cloud.client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -7,7 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 
-public class Main extends Application {
+public class Client extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
