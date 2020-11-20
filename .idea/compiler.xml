@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+<<<<<<< HEAD
         <module name="6.Java.CloudStorage" />
       </profile>
     </annotationProcessing>
@@ -14,5 +15,12 @@
       <module name="common" target="1.8" />
       <module name="server" target="1.8" />
     </bytecodeTargetLevel>
+=======
+        <module name="common" />
+        <module name="server" />
+        <module name="client" />
+      </profile>
+    </annotationProcessing>
+>>>>>>> update10.11.20
   </component>
 </project>
