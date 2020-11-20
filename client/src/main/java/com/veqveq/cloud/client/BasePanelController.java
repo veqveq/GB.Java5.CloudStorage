@@ -6,16 +6,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 
+import java.io.File;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public abstract class BasePanelController implements Initializable {
@@ -31,23 +29,60 @@ public abstract class BasePanelController implements Initializable {
         mouseListener();
     }
 
-    public abstract void btnUpperKey(ActionEvent actionEvent);
-
-    public abstract void btnNew(ActionEvent actionEvent);
-
-    public abstract void btnRename(ActionEvent actionEvent);
-
-    public abstract void btnDelete(ActionEvent actionEvent);
-
     public abstract void btnCopy(ActionEvent actionEvent);
 
     public abstract void btnMove(ActionEvent actionEvent);
 
     protected abstract void updateList(Path path);
 
-    protected abstract Path getPathOnMouseClick();
+    protected abstract void fileCreate(Path path);
 
-    protected void initTableView() {
+    protected abstract void fileRename(Path oldName, Path newName);
+
+    protected abstract void fileDelete(Path path);
+
+    public void btnNew(ActionEvent actionEvent) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Создание каталога");
+        dialog.setHeaderText("Введите название каталога");
+
+        Optional<String> text = dialog.showAndWait();
+        Path path = Paths.get(pathField.getText()).resolve(text.get());
+        fileCreate(path);
+        new File(path.toString()).mkdir();
+        updateList(Paths.get(pathField.getText()));
+    }
+
+    public void btnRename(ActionEvent actionEvent) {
+        FileInfo file = clientFiles.getSelectionModel().getSelectedItem();
+        if (file == null) {
+            new Alert(Alert.AlertType.ERROR, "Выберите файл!").showAndWait();
+        } else {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Переименование");
+            dialog.setHeaderText("Введите новое имя файла");
+
+            Optional<String> text = dialog.showAndWait();
+            Path newPath = Paths.get(pathField.getText()).resolve(text.get());
+            Path oldPath = Paths.get(pathField.getText()).resolve(file.getName());
+            fileRename(oldPath,newPath);
+            updateList(Paths.get(pathField.getText()));
+        }
+    }
+
+    public void btnDelete(ActionEvent actionEvent) {
+        FileInfo file = clientFiles.getSelectionModel().getSelectedItem();
+        if (file == null) {
+            new Alert(Alert.AlertType.ERROR, "Выберите файл!").showAndWait();
+        } else {
+            Path path = Paths.get(pathField.getText()).resolve(file.getName());
+            fileDelete(path);
+            updateList(Paths.get(pathField.getText()));
+        }
+    }
+
+
+    private void initTableView() {
         TableColumn<FileInfo, String> fileType = new TableColumn<>("Тип");
         fileType.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getType().getName()));
         fileType.setPrefWidth(50);
@@ -81,13 +116,20 @@ public abstract class BasePanelController implements Initializable {
         clientFiles.getSortOrder().add(fileType);
     }
 
+    public void btnUpperKey(ActionEvent actionEvent) {
+        Path upperPath = Paths.get(pathField.getText()).getParent();
+        if (upperPath != null) {
+            updateList(upperPath);
+        }
+    }
+
     private void mouseListener() {
         clientFiles.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 if (event.getClickCount() == 2) {
-                    Path path = getPathOnMouseClick();
-                    if (Files.isDirectory(path)) {
+                    Path path = Paths.get(pathField.getText()).resolve(clientFiles.getSelectionModel().getSelectedItem().getName());
+                    if (clientFiles.getSelectionModel().getSelectedItem().getType() == FileInfo.FileType.DIRECTORY) {
                         updateList(path);
                     }
                 }

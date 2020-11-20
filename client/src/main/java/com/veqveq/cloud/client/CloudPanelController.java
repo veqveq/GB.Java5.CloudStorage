@@ -1,54 +1,42 @@
 package com.veqveq.cloud.client;
 
-import com.veqveq.cloud.common.DirMessage;
-import com.veqveq.cloud.common.DirRequest;
+import com.veqveq.cloud.common.*;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CloudPanelController extends BasePanelController {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        Network.start();
         updateList(null);
         super.initialize(location, resources);
     }
 
     @Override
-    public void btnUpperKey(ActionEvent actionEvent) {
-        Path upperPath = Paths.get(pathField.getText()).getParent();
-        if (upperPath != null) {
-            updateList(upperPath);
-        }
+    protected void fileCreate(Path path) {
+        Network.sendMsg(new Command(path, Command.BaseCommand.NEW));
     }
 
     @Override
-    public void btnNew(ActionEvent actionEvent) {
-
+    protected void fileRename(Path oldName, Path newName) {
+        Network.sendMsg(new Command(oldName, newName, Command.BaseCommand.RENAME));
     }
 
     @Override
-    public void btnRename(ActionEvent actionEvent) {
-
-    }
-
-    @Override
-    public void btnDelete(ActionEvent actionEvent) {
-
+    protected void fileDelete(Path path) {
+        Network.sendMsg(new Command(path, Command.BaseCommand.DELETE));
     }
 
     @Override
     public void btnCopy(ActionEvent actionEvent) {
-
     }
 
     @Override
@@ -59,25 +47,30 @@ public class CloudPanelController extends BasePanelController {
     @Override
     protected void updateList(Path path) {
         Network.sendMsg(new DirRequest(path));
-        try {
-            DirMessage msg = (DirMessage) Network.readMsg();
-            pathField.setText(msg.getPath().toString());
-            List<FileInfo> pathList = msg.getDirectories().map(FileInfo::new).collect(Collectors.toList());
-            clientFiles.getItems().clear();
-            for (FileInfo fileInfo : pathList) {
-                clientFiles.getItems().add(fileInfo);
+        Thread t = new Thread(() -> {
+            while (true) {
+                DirMessage msg;
+                try {
+                    msg = (DirMessage) Network.readObject();
+                    System.out.println(msg.getClass() + " получен");
+                    pathField.setText(msg.getPath());
+                    List<FileInfo> pathList = Arrays.stream(msg.getDirs())
+                            .map(str -> Paths.get(str))
+                            .map(FileInfo::new)
+                            .collect(Collectors.toList());
+                    clientFiles.getItems().clear();
+                    for (FileInfo fileInfo : pathList) {
+                        clientFiles.getItems().add(fileInfo);
+                    }
+                    clientFiles.sort();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return;
             }
-            clientFiles.sort();
-        } catch (IOException e) {
-            new Alert(Alert.AlertType.WARNING, String.format("Нет доступа к директории %s", path), ButtonType.OK).showAndWait();
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected Path getPathOnMouseClick() {
-        return null;
+        });
+        t.start();
     }
 }

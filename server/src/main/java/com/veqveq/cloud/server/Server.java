@@ -1,11 +1,5 @@
 package com.veqveq.cloud.server;
 
-//import java.io.IOException;
-//import java.net.ServerSocket;
-//import java.net.Socket;
-//import java.util.concurrent.ExecutorService;
-//import java.util.concurrent.Executors;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -19,8 +13,6 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
 public class Server {
-    public int PORT = 8789;
-
     public void run() throws Exception {
         EventLoopGroup mainGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -29,18 +21,18 @@ public class Server {
             b.group(mainGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(
-                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            socketChannel.pipeline().addLast(
+                                    new ObjectDecoder(50 * 1024 * 1024, ClassResolvers.cacheDisabled(null)),
                                     new ObjectEncoder(),
-                                    new MessageHandler()
+                                    new MessageHandler(),
+                                    new CommandHandler()
                             );
                         }
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-            ChannelFuture future = b.bind(PORT).sync();
-            future.channel().closeFuture();
+            ChannelFuture future = b.bind(8789).sync();
+            future.channel().closeFuture().sync();
         } finally {
             mainGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
@@ -50,17 +42,4 @@ public class Server {
     public static void main(String[] args) throws Exception {
         new Server().run();
     }
-
-//    public static void main(String[] args) {
-//        ExecutorService clientsPool = Executors.newFixedThreadPool(4);
-//        try(ServerSocket serverSocket = new ServerSocket(PORT)){
-//            while (true) {
-//                Socket socket = serverSocket.accept();
-//                System.out.printf("Клиент %s подключился \n",socket.getLocalSocketAddress());
-//                clientsPool.execute(new ClientHandler(socket));
-//            }
-//        }catch (IOException e){
-//            e.printStackTrace();
-//        }
-//    }
 }

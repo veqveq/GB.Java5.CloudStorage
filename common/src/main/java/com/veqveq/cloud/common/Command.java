@@ -1,26 +1,29 @@
 package com.veqveq.cloud.common;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Command extends BaseMessage {
 
-    private enum BaseCommand{
-        DELETE,RENAME,NEW
+    public enum BaseCommand {
+        DELETE, RENAME, NEW
     }
 
 
     private BaseCommand command;
-    private Path path;
-    private String value;
+    private String newPath;
+    private String oldPath;
 
     public Command(Path path, BaseCommand command) {
         this.command = command;
-        this.path = path;
+        if (path != null) {
+            this.newPath = Paths.get("server/src/main/java").resolve(path).toString();
+        }
     }
 
-    public Command(Path path, BaseCommand command, String value){
-        this.value = value;
-        this.path = path;
+    public Command(Path oldName, Path newName, BaseCommand command) {
+        this.oldPath = Paths.get("server/src/main/java").resolve(oldName).toString();
+        this.newPath = Paths.get("server/src/main/java").resolve(newName).toString();
         this.command = command;
     }
 
@@ -28,11 +31,13 @@ public class Command extends BaseMessage {
         return command;
     }
 
-    public Path getPath() {
-        return path;
+    public String getPath() {
+        return newPath;
     }
 
-    public String getValue() {
-        return value;
+
+
+    public String getOldPath() {
+        return oldPath;
     }
 }

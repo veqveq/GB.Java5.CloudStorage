@@ -9,27 +9,27 @@ import java.net.Socket;
 
 public class Network {
     private static Socket socket;
-    private static ObjectDecoderInputStream in;
     private static ObjectEncoderOutputStream out;
+    private static ObjectDecoderInputStream in;
 
     public static void start() {
         try {
             socket = new Socket("localhost", 8789);
-            in = new ObjectDecoderInputStream(socket.getInputStream());
             out = new ObjectEncoderOutputStream(socket.getOutputStream());
+            in = new ObjectDecoderInputStream(socket.getInputStream(), 50 * 1024 * 1024);
         } catch (IOException e) {
-            throw new RuntimeException("Не удается создать сокет!");
+            e.printStackTrace();
         }
     }
 
     public static void stop() {
         try {
-            in.close();
+            out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
-            out.close();
+            in.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -40,16 +40,18 @@ public class Network {
         }
     }
 
-    public static void sendMsg(BaseMessage msg) {
+    public static boolean sendMsg(BaseMessage msg) {
         try {
             out.writeObject(msg);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
-    public static BaseMessage readMsg() throws IOException, ClassNotFoundException {
-        BaseMessage msg = (BaseMessage) in.readObject();
-        return msg;
+    public static BaseMessage readObject() throws ClassNotFoundException, IOException {
+        Object obj = in.readObject();
+        return (BaseMessage) obj;
     }
 }
