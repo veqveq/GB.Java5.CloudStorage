@@ -2,15 +2,16 @@ package com.veqveq.cloud.common;
 
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FileRequest extends BaseMessage {
-    private Path path;
+    private String path;
 
     public FileRequest(Path path) {
-        this.path = path;
+        this.path = Paths.get("server/src/main/java").resolve(path).toString();
     }
 
-    public Path getPath() {
+    public String getPath() {
         return path;
     }
 }

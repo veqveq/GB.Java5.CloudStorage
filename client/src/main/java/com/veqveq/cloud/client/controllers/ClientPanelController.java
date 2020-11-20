@@ -1,5 +1,8 @@
-package com.veqveq.cloud.client;
+package com.veqveq.cloud.client.controllers;
 
+import com.veqveq.cloud.client.utils.FileInfo;
+import com.veqveq.cloud.client.utils.Network;
+import com.veqveq.cloud.common.FileMessage;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -88,10 +91,17 @@ public class ClientPanelController extends BasePanelController {
     }
 
     @Override
-    public void btnCopy(ActionEvent actionEvent) {
+    public void btnCopy(Path srcPath, Path dstPath, BasePanelController updatedPanel) {
+        System.out.printf("[Клиент]:%s -> %s [Облако]\n",srcPath.toString(),dstPath.toString());
+        Network.sendMsg(new FileMessage(srcPath,dstPath));
     }
 
     @Override
-    public void btnMove(ActionEvent actionEvent) {
+    public void btnMove(Path srcPath, Path dstPath, BasePanelController updatedPanel) {
+        System.out.printf("[Клиент]:%s -> %s [Облако]\n",srcPath.toString(),dstPath.toString());
+        btnCopy(srcPath,dstPath,updatedPanel);
+        fileDelete(srcPath);
+        updateList(srcPath.getParent());
+        updatedPanel.updateList(dstPath);
     }
 }

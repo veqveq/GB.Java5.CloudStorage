@@ -1,4 +1,4 @@
-package com.veqveq.cloud.client;
+package com.veqveq.cloud.client.utils;
 
 
 import java.io.IOException;

@@ -32,13 +32,15 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
                 ctx.fireChannelRead(cmd);
                 System.out.println(cmd.getClass() + " передан в CommandHandler");
             } else if (msg instanceof FileRequest) {
-                Path path = ((FileRequest) msg).getPath();
+                FileRequest request = (FileRequest) msg;
+                Path path = Paths.get(request.getPath());
+                System.out.println(path.toString());
                 FileMessage file = new FileMessage(path);
                 ctx.writeAndFlush(file);
-                System.out.println(file.getClass() + " получен");
+                System.out.println(file.getClass() + " отправлен");
             } else if (msg instanceof FileMessage) {
                 FileMessage file = (FileMessage) msg;
-                Path path = file.getPath().resolve(file.getName());
+                Path path = Paths.get("server/src/main/java").resolve(Paths.get(file.getDstPath()));
                 Files.write(path, file.getData(), StandardOpenOption.CREATE);
                 System.out.println(path.toString() + " создан");
             } else if (msg instanceof DirRequest) {

@@ -1,5 +1,6 @@
-package com.veqveq.cloud.client;
+package com.veqveq.cloud.client.controllers;
 
+import com.veqveq.cloud.client.utils.FileInfo;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -29,9 +30,9 @@ public abstract class BasePanelController implements Initializable {
         mouseListener();
     }
 
-    public abstract void btnCopy(ActionEvent actionEvent);
+    public abstract void btnCopy(Path srcPath, Path dstPath, BasePanelController updatedPanel);
 
-    public abstract void btnMove(ActionEvent actionEvent);
+    public abstract void btnMove(Path srcPath, Path dstPath, BasePanelController updatedPanel);
 
     protected abstract void updateList(Path path);
 
@@ -83,10 +84,6 @@ public abstract class BasePanelController implements Initializable {
 
 
     private void initTableView() {
-        TableColumn<FileInfo, String> fileType = new TableColumn<>("Тип");
-        fileType.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getType().getName()));
-        fileType.setPrefWidth(50);
-
         TableColumn<FileInfo, String> fileName = new TableColumn<>("Имя");
         fileName.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getName()));
         fileName.setPrefWidth(250);
@@ -112,8 +109,8 @@ public abstract class BasePanelController implements Initializable {
         lastModified.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getLastModified().format(dtf)));
         lastModified.setPrefWidth(150);
 
-        clientFiles.getColumns().addAll(fileType, fileName, fileSize, lastModified);
-        clientFiles.getSortOrder().add(fileType);
+        clientFiles.getColumns().addAll(fileName, fileSize, lastModified);
+        clientFiles.getSortOrder().add(fileSize);
     }
 
     public void btnUpperKey(ActionEvent actionEvent) {
@@ -136,4 +133,13 @@ public abstract class BasePanelController implements Initializable {
             }
         });
     }
+
+    public FileInfo getSelectedItem(){
+        return clientFiles.getSelectionModel().getSelectedItem();
+    }
+
+    public String getCurrentPath(){
+        return pathField.getText();
+    }
+
 }
