@@ -17,8 +17,14 @@ public class CommandHandler extends ChannelInboundHandlerAdapter {
         try {
             if (cmd.getCommand() == Command.BaseCommand.NEW) {
                 Path path = Paths.get(cmd.getPath());
-                new File(path.toString()).mkdir();
-                System.out.println("Файл создан");
+                StringBuilder curPath = new StringBuilder();
+                for (int i = 0; i < path.getNameCount(); i++) {
+                    curPath.append(path.getName(i)).append("\\");
+                    if (!Files.exists(Paths.get(curPath.toString()))){
+                        new File(curPath.toString()).mkdir();
+                        System.out.println("Директория создана");
+                    }
+                }
             } else if (cmd.getCommand() == Command.BaseCommand.RENAME) {
                 try {
                     Path oldPath = Paths.get(cmd.getOldPath());
@@ -50,7 +56,7 @@ public class CommandHandler extends ChannelInboundHandlerAdapter {
                     e.printStackTrace();
                 }
             }
-        }finally {
+        } finally {
             ReferenceCountUtil.release(msg);
         }
     }

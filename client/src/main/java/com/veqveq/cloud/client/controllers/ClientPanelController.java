@@ -2,6 +2,7 @@ package com.veqveq.cloud.client.controllers;
 
 import com.veqveq.cloud.client.utils.FileInfo;
 import com.veqveq.cloud.client.utils.Network;
+import com.veqveq.cloud.common.Command;
 import com.veqveq.cloud.common.FileMessage;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -92,14 +93,41 @@ public class ClientPanelController extends BasePanelController {
 
     @Override
     public void btnCopy(Path srcPath, Path dstPath, BasePanelController updatedPanel) {
-        System.out.printf("[Клиент]:%s -> %s [Облако]\n",srcPath.toString(),dstPath.toString());
-        Network.sendMsg(new FileMessage(srcPath,dstPath));
+        if (Files.isDirectory(srcPath)) {
+            int parentLength = srcPath.getNameCount();
+            try {
+                Files.walkFileTree(srcPath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        if (Files.list(dir).collect(Collectors.toList()).size() == 0) {
+                            Path path = dstPath.resolve(dir.subpath(0, dir.getNameCount() - parentLength)).resolve((dir).getFileName());
+                            Network.sendMsg(new Command(path, Command.BaseCommand.NEW));
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+                Files.walkFileTree(srcPath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Path path = dstPath.resolve(file.subpath(0, file.getNameCount() - parentLength));
+                        Network.sendMsg(new FileMessage(file, path));
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.printf("[Клиент]:%s -> %s [Облако]\n", srcPath.toString(), dstPath.toString());
+            Network.sendMsg(new FileMessage(srcPath, dstPath));
+        }
+        updatedPanel.updateList(dstPath);
     }
 
     @Override
     public void btnMove(Path srcPath, Path dstPath, BasePanelController updatedPanel) {
-        System.out.printf("[Клиент]:%s -> %s [Облако]\n",srcPath.toString(),dstPath.toString());
-        btnCopy(srcPath,dstPath,updatedPanel);
+        System.out.printf("[Клиент]:%s -> %s [Облако]\n", srcPath.toString(), dstPath.toString());
+        btnCopy(srcPath, dstPath, updatedPanel);
         fileDelete(srcPath);
         updateList(srcPath.getParent());
         updatedPanel.updateList(dstPath);
